@@ -129,6 +129,12 @@ string planLblSz = switch planLabelSizeOpt
 
 priceFmt = input.string("#.#####", title="Price Format (รูปแบบราคาใน label)", options=["#.#####", "#.####", "#.###", "#.##", "#.#", "#"], group="Display & Stats", tooltip="รูปแบบทศนิยมของราคาที่แสดงใน plan label", display=display.none)
 
+// --- TP / SL visuals ---
+tpSlArrowWidth  = input.int(3, title="TP/SL Arrow Width (ความหนาลูกศร)", minval=1, maxval=10, group="Display & Stats", tooltip="ความหนาของเส้นลูกศร entry → TP/SL", display=display.none)
+tpSlMarkerLen   = input.int(6, title="TP/SL Marker Length (bars)", minval=1, maxval=30, group="Display & Stats", tooltip="ความยาวเส้นแนวนอนเล็กๆ บอกราคา TP / SL (หน่วย: แท่ง)", display=display.none)
+tpSlMarkerWidth = input.int(3, title="TP/SL Marker Line Width (ความหนาเส้นแนวนอน)", minval=1, maxval=10, group="Display & Stats", tooltip="ความหนาเส้นแนวนอนบอกราคา TP / SL", display=display.none)
+tpSlBrightness  = input.int(10, title="TP/SL Brightness (0=สว่างสุด, 80=จาง)", minval=0, maxval=80, step=5, group="Display & Stats", tooltip="ความโปร่งใสของเส้น TP/SL — น้อย = สีจัด/สว่างจ้า, มาก = สีจาง", display=display.none)
+
 showStatsTable    = input.bool(true, title="Show Main Stats Table", group="Display & Stats", display=display.none)
 showTradePath     = input.bool(true, title="Show Trade Path Lines (เส้นโยง เปิด→TP/SL)", group="Display & Stats", display=display.none)
 showMonthlyTable  = input.bool(true, title="Show Monthly Table (By Month)", group="Display & Stats", display=display.none)
@@ -549,10 +555,15 @@ if array.size(pState) > 0
                 regLabel(label.new(x=bar_index, y=ent, text=(isB ? "BUY " : "SELL ") + ordType + "\n@ " + str.tostring(ent, "#.#####") + "\nSize: " + str.tostring(lot, "#.##") + " Lots\nTP: " + str.tostring(trr, "#.##") + "R", color=color.new(color.black, 60), textcolor=color.new(color.white, 15), style=isB ? label.style_label_up : label.style_label_down, size=lblSz))
                 regLabel(label.new(x=bar_index, y=ent, text="", style=label.style_circle, color=color.new(isB ? color.green : color.red, 65), size=lblSz))
                 regLine(line.new(x1=bar_index - 3, y1=ent, x2=bar_index + 3, y2=ent, color=color.new(isB ? color.green : color.red, 20), width=2, style=line.style_solid))
-                regLine(line.new(x1=bar_index - 2, y1=sl, x2=bar_index + 2, y2=sl, color=color.new(color.red, 20), width=2, style=line.style_solid))
-                regLabel(label.new(x=bar_index + 3, y=sl, text="SL " + str.tostring(sl, "#.#####"), style=label.style_label_left, color=color.new(color.red, 50), textcolor=color.white, size=lblSz))
-                regLine(line.new(x1=bar_index, y1=ent, x2=bar_index, y2=tp, color=color.new(color.green, 60), width=1, style=line.style_arrow_right))
-                regLine(line.new(x1=bar_index, y1=ent, x2=bar_index, y2=sl, color=color.new(color.red, 60), width=1, style=line.style_arrow_right))
+                // TP horizontal price marker + label
+                regLine(line.new(x1=bar_index - tpSlMarkerLen, y1=tp, x2=bar_index + tpSlMarkerLen, y2=tp, color=color.new(color.green, tpSlBrightness), width=tpSlMarkerWidth, style=line.style_solid))
+                regLabel(label.new(x=bar_index + tpSlMarkerLen, y=tp, text="TP " + str.tostring(tp, priceFmt), style=label.style_label_left, color=color.new(color.green, 40), textcolor=color.white, size=lblSz))
+                // SL horizontal price marker + label
+                regLine(line.new(x1=bar_index - tpSlMarkerLen, y1=sl, x2=bar_index + tpSlMarkerLen, y2=sl, color=color.new(color.red, tpSlBrightness), width=tpSlMarkerWidth, style=line.style_solid))
+                regLabel(label.new(x=bar_index + tpSlMarkerLen, y=sl, text="SL " + str.tostring(sl, priceFmt), style=label.style_label_left, color=color.new(color.red, 40), textcolor=color.white, size=lblSz))
+                // Bright, adjustable arrows entry → TP / SL
+                regLine(line.new(x1=bar_index, y1=ent, x2=bar_index, y2=tp, color=color.new(color.green, tpSlBrightness), width=tpSlArrowWidth, style=line.style_arrow_right))
+                regLine(line.new(x1=bar_index, y1=ent, x2=bar_index, y2=sl, color=color.new(color.red,   tpSlBrightness), width=tpSlArrowWidth, style=line.style_arrow_right))
                 line.delete(array.get(pLine, pi))
                 label.delete(array.get(pLabel, pi))
                 removePlan := true

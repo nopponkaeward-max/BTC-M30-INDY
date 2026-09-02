@@ -1,6 +1,6 @@
 //@version=6
 
-indicator("V1.1 BTC30M", shorttitle="V1.1 BTC30M", overlay=true, max_boxes_count=500, max_labels_count=500, max_lines_count=500)
+indicator("FeeInvest_BTCM30_V1.0", shorttitle="FeeInvest_BTCM30_V1.0", overlay=true, max_boxes_count=500, max_labels_count=500, max_lines_count=500)
 
 // ==========================================
 // --- 1. INPUT SETTINGS ---

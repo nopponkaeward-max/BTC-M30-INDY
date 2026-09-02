@@ -127,16 +127,18 @@ string planLblSz = switch planLabelSizeOpt
     "huge"   => size.huge
     =>          size.auto
 
-priceFmt = input.string("#.#####", title="Price Format (รูปแบบราคาใน label)", options=["#.#####", "#.####", "#.###", "#.##", "#.#", "#"], group="Display & Stats", tooltip="รูปแบบทศนิยมของราคาที่แสดงใน plan label", display=display.none)
+priceFmt = input.string("#.##", title="Price Format (รูปแบบราคาใน label)", options=["#.#####", "#.####", "#.###", "#.##", "#.#", "#"], group="Display & Stats", tooltip="รูปแบบทศนิยมของราคาที่แสดงใน label (BTC แนะนำ #.## หรือ #)", display=display.none)
 
-// --- TP / SL visuals ---
-tpSlArrowWidth  = input.int(3, title="TP/SL Arrow Width (ความหนาลูกศร)", minval=1, maxval=10, group="Display & Stats", tooltip="ความหนาของเส้นลูกศร entry → TP/SL", display=display.none)
-tpSlMarkerLen   = input.int(6, title="TP/SL Marker Length (bars)", minval=1, maxval=30, group="Display & Stats", tooltip="ความยาวเส้นแนวนอนเล็กๆ บอกราคา TP / SL (หน่วย: แท่ง)", display=display.none)
-tpSlMarkerWidth = input.int(3, title="TP/SL Marker Line Width (ความหนาเส้นแนวนอน)", minval=1, maxval=10, group="Display & Stats", tooltip="ความหนาเส้นแนวนอนบอกราคา TP / SL", display=display.none)
-tpSlBrightness  = input.int(10, title="TP/SL Brightness (0=สว่างสุด, 80=จาง)", minval=0, maxval=80, step=5, group="Display & Stats", tooltip="ความโปร่งใสของเส้น TP/SL — น้อย = สีจัด/สว่างจ้า, มาก = สีจาง", display=display.none)
-
-// --- Entry signal arrow (สามเหลี่ยมชี้จุดเปิดออเดอร์) ---
-entryArrowSizeOpt = input.string("normal", title="Entry Signal Arrow Size (ขนาดลูกศร signal)", options=["tiny","small","normal","large","huge","auto"], group="Display & Stats", tooltip="ขนาดลูกศรสามเหลี่ยม signal ที่จุดเปิดออเดอร์ (buy/sell)", display=display.none)
+// ==========================================
+// --- VISUAL STYLE (design system ทั้งกราฟ) ---
+// ==========================================
+chartTheme     = input.string("Dark", title="Chart Theme (พื้นหลังกราฟ)", options=["Dark", "Light"], group="Visual Style", tooltip="เลือกให้ตรงกับธีมกราฟ TradingView — ปรับสีพื้นป้ายและตัวอักษรให้อ่านง่าย", display=display.none)
+tradeVisual    = input.string("R:R Zone", title="Trade Visual (รูปแบบแสดง Entry → TP/SL)", options=["R:R Zone", "Arrows", "Both"], group="Visual Style", tooltip="R:R Zone = กล่องโปร่ง เขียว (entry→TP) / แดง (entry→SL) แบบเครื่องมือ Long/Short Position\nArrows = ลูกศรแนวตั้งจาก entry ไป TP / SL\nBoth = แสดงทั้งสองแบบ", display=display.none)
+tpSlMarkerLen   = input.int(8, title="Trade Zone Length (bars)", minval=1, maxval=40, group="Visual Style", tooltip="ความยาวกล่อง R:R และเส้นระดับ TP / SL (หน่วย: แท่ง) — สั้นๆ ไม่ลากไปถึงจุดปิดออเดอร์", display=display.none)
+tpSlMarkerWidth = input.int(2, title="TP/SL Level Line Width (ความหนาเส้นระดับ)", minval=1, maxval=10, group="Visual Style", tooltip="ความหนาเส้นแนวนอนสั้นๆ ที่ระดับ TP / SL", display=display.none)
+tpSlArrowWidth  = input.int(2, title="TP/SL Arrow Width (ความหนาลูกศร — โหมด Arrows)", minval=1, maxval=10, group="Visual Style", display=display.none)
+tpSlBrightness  = input.int(0, title="TP/SL Brightness (0=สว่างสุด, 80=จาง)", minval=0, maxval=80, step=5, group="Visual Style", tooltip="ความโปร่งใสของเส้นระดับ / ลูกศร TP-SL และลูกศร entry", display=display.none)
+entryArrowSizeOpt = input.string("normal", title="Entry Signal Arrow Size (ขนาดลูกศร signal)", options=["tiny","small","normal","large","huge","auto"], group="Visual Style", tooltip="ขนาดลูกศรสามเหลี่ยม signal ที่จุดเปิดออเดอร์ (buy/sell)", display=display.none)
 entryArrowSz = switch entryArrowSizeOpt
     "tiny"   => size.tiny
     "small"  => size.small
@@ -144,6 +146,22 @@ entryArrowSz = switch entryArrowSizeOpt
     "large"  => size.large
     "huge"   => size.huge
     =>          size.auto
+showEntryInfo  = input.bool(true, title="Show Entry Info Label (lot / R)", group="Visual Style", tooltip="ป้ายข้อมูลที่จุดเข้าไม้: ประเภทออเดอร์, ราคา, lot, R", display=display.none)
+showTrailLine  = input.bool(true, title="Show Plan → Entry Trail (เส้นโยงจากจุดสร้างแผน)", group="Visual Style", display=display.none)
+
+// --- Palette (ต่อเนื่องกับตารางโทน gold-dark) ---
+bool  vDark   = chartTheme == "Dark"
+color vBull   = color.rgb(0, 210, 160)      // Buy / TP / Win
+color vBear   = color.rgb(255, 82, 82)      // Sell / SL / Loss
+color vPlan   = color.rgb(212, 175, 55)     // Pending Pullback plan (gold = สิ่งที่ต้องทำ)
+color vMid    = color.rgb(102, 208, 255)    // Pending Mid-Level plan (cyan)
+color vRange  = color.rgb(150, 160, 182)    // Neutral range box (โหมด break either way)
+color vMuted  = vDark ? color.rgb(128, 138, 158) : color.rgb(105, 113, 132)
+color vInk    = vDark ? color.rgb(13, 17, 28) : color.rgb(250, 251, 253)   // พื้นป้าย
+color vText   = vDark ? color.rgb(233, 236, 243) : color.rgb(20, 24, 36)   // ตัวอักษรบนพื้นป้าย
+color vInkBg  = color.new(vInk, 8)
+color vNone   = color.new(color.white, 100)
+color vDarkTx = color.rgb(13, 17, 28)
 
 showStatsTable    = input.bool(true, title="Show Main Stats Table", group="Display & Stats", display=display.none)
 showTradePath     = input.bool(true, title="Show Trade Path Lines (เส้นโยง เปิด→TP/SL)", group="Display & Stats", display=display.none)
@@ -238,6 +256,15 @@ regLabel(label _lb) =>
         if array.size(regLabels) > 500
             label.delete(array.shift(regLabels))
 
+// R:R zone boxes (2 ต่อเทรด) — แยก registry จาก pattern box, รวมกันไม่เกิน 500 ตาม Pine
+var array<box> zoneBoxReg = array.new<box>()
+int maxZoneBoxes = math.max(20, 490 - maxPatBoxes)
+regZoneBox(box _b) =>
+    if not na(_b)
+        array.push(zoneBoxReg, _b)
+        if array.size(zoneBoxReg) > maxZoneBoxes
+            box.delete(array.shift(zoneBoxReg))
+
 // --- Pending plan arrays ---
 var array<bool>  pIsBuy    = array.new_bool()
 var array<float> pBreakLvl = array.new_float()
@@ -263,12 +290,26 @@ var array<float> tTradeRR   = array.new_float()
 var array<int>   tOriginTime= array.new_int()
 var array<int>   tType      = array.new_int()
 
-// --- Helpers for plan label text ---
+// --- Helpers for plan label text (3 บรรทัด อ่านเร็ว: ประเภทออเดอร์ / ราคาเข้า / SL) ---
+f_px(float _p) => str.tostring(_p, priceFmt)
+
 f_planStopText(bool _isB, float _entry, float _sl) =>
-    "รอ " + (_isB ? "Buy" : "Sell") + " Stop ที่ราคา " + str.tostring(_entry, priceFmt) + "\nและ SL ที่ " + str.tostring(_sl, priceFmt)
+    "รอ " + (_isB ? "BUY STOP" : "SELL STOP") + "\nที่ราคา " + f_px(_entry) + "\nSL ที่  " + f_px(_sl)
 
 f_planLimitText(bool _isB, float _entry, float _sl) =>
-    "รอ " + (_isB ? "Buy" : "Sell") + " Limit ที่ราคา " + str.tostring(_entry, priceFmt) + "\nและ SL ที่ " + str.tostring(_sl, priceFmt)
+    "รอ " + (_isB ? "BUY LIMIT" : "SELL LIMIT") + "\nที่ราคา " + f_px(_entry) + "\nSL ที่  " + f_px(_sl)
+
+// บรรทัดเดียว (ใช้ในโหมด range รอเบรค 2 ทาง)
+f_planStopLine(bool _isB, float _entry, float _sl) =>
+    (_isB ? "BUY STOP  " : "SELL STOP ") + f_px(_entry) + "  SL " + f_px(_sl)
+
+// Label แบบ "ป้ายหมึก" — พื้นเข้ม ตัวอักษรสี ใช้ font monospace ให้ตัวเลขเรียงตรง
+f_inkLabel(int _x, float _y, string _txt, string _style, color _txtCol, string _size) =>
+    label.new(x=_x, y=_y, text=_txt, style=_style, color=vInkBg, textcolor=_txtCol, size=_size, text_font_family=font.family_monospace)
+
+// Label แบบ "ป้ายทึบ" — พื้นสีเต็ม ใช้กับผลลัพธ์ Win/Loss ให้เด่น
+f_solidLabel(int _x, float _y, string _txt, string _style, color _bg, color _txtCol, string _size) =>
+    label.new(x=_x, y=_y, text=_txt, style=_style, color=_bg, textcolor=_txtCol, size=_size, text_font_family=font.family_monospace)
 
 // ==========================================
 // --- 3. SWING TRACKING & PATTERN DETECTION ---
@@ -306,8 +347,9 @@ if not na(dowPivHi)
     bool isLH = not na(dowPrevSwingHi) and dowLastSwingHi < dowPrevSwingHi
     if showDowLabels
         string hlbl = isHH ? "HH" : isLH ? "LH" : "H"
-        color  hcol = isHH ? color.green : isLH ? color.red : color.gray
-        regLabel(label.new(x=bar_index - dowSwingLen, y=dowPivHi + 15 * syminfo.mintick, text=hlbl, style=label.style_label_down, color=color.new(hcol, 70), textcolor=hcol, size=lblSz))
+        color  hcol = isHH ? color.new(vBull, 25) : isLH ? color.new(vBear, 25) : color.new(vMuted, 35)
+        // ตัวอักษรลอย ไม่มีพื้น — โครงสร้าง swing เป็นแค่บริบท ไม่แย่งความสนใจ
+        regLabel(label.new(x=bar_index - dowSwingLen, y=dowPivHi + 15 * syminfo.mintick, text=hlbl, style=label.style_label_down, color=vNone, textcolor=hcol, size=lblSz, text_font_family=font.family_monospace))
     if isHH or isLH
         swSeq1 := swSeq2, swPx1 := swPx2, swBr1 := swBr2
         swSeq2 := swSeq3, swPx2 := swPx3, swBr2 := swBr3
@@ -328,8 +370,8 @@ if not na(dowPivLo)
     bool isLL = not na(dowPrevSwingLo) and dowLastSwingLo < dowPrevSwingLo
     if showDowLabels
         string llbl = isHL ? "HL" : isLL ? "LL" : "L"
-        color  lcol = isHL ? color.green : isLL ? color.red : color.gray
-        regLabel(label.new(x=bar_index - dowSwingLen, y=dowPivLo - 15 * syminfo.mintick, text=llbl, style=label.style_label_up, color=color.new(lcol, 70), textcolor=lcol, size=lblSz))
+        color  lcol = isHL ? color.new(vBull, 25) : isLL ? color.new(vBear, 25) : color.new(vMuted, 35)
+        regLabel(label.new(x=bar_index - dowSwingLen, y=dowPivLo - 15 * syminfo.mintick, text=llbl, style=label.style_label_up, color=vNone, textcolor=lcol, size=lblSz, text_font_family=font.family_monospace))
     if isHL or isLL
         swSeq1 := swSeq2, swPx1 := swPx2, swBr1 := swBr2
         swSeq2 := swSeq3, swPx2 := swPx3, swBr2 := swBr3
@@ -348,8 +390,8 @@ if not na(dowPivLo)
 
 if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot) and patBoxTop > patBoxBot
     bool isB = newBuyPattern
-    color patCol = breakEitherWay ? color.new(color.blue, 0) : (isB ? color.green : color.red)
-    string patName = breakEitherWay ? "Range ⇅: " + swSeq1 + "→" + swSeq2 + "→" + swSeq3 : (isB ? "Buy" : "Sell") + ": " + swSeq1 + "→" + swSeq2 + "→" + swSeq3
+    color patCol = breakEitherWay ? vRange : (isB ? vBull : vBear)
+    string patName = (breakEitherWay ? "RANGE ⇅" : (isB ? "▲ BUY" : "▼ SELL")) + "  " + swSeq1 + "·" + swSeq2 + "·" + swSeq3
     float rng = patBoxTop - patBoxBot
     int patDow = dayofweek(time, tz)
     bool tradeDayAllowed = switch patDow
@@ -365,18 +407,19 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
 
     // --- Pattern box ---
     if showPatternBox
-        regPatBox(box.new(left=patBoxLeft, top=patBoxTop, right=bar_index, bottom=patBoxBot, bgcolor=color.new(patCol, 88), border_color=color.new(patCol, 40), border_width=2, border_style=line.style_solid, text=patName, text_size=size.small, text_color=color.new(patCol, 10), text_halign=text.align_center, text_valign=text.align_bottom))
+        // กรอบบาง พื้นจางมาก ชื่อ pattern มุมซ้ายบน — ไม่บังแท่งเทียน
+        regPatBox(box.new(left=patBoxLeft, top=patBoxTop, right=bar_index, bottom=patBoxBot, bgcolor=color.new(patCol, 92), border_color=color.new(patCol, 45), border_width=1, border_style=breakEitherWay ? line.style_dashed : line.style_solid, text=patName, text_size=size.tiny, text_color=color.new(patCol, 15), text_halign=text.align_left, text_valign=text.align_top, text_font_family=font.family_monospace))
 
     // --- Create pending Pullback% plan ---
     bool midOnlyMode = useMidLevel and midOnly
     if not tradeDayAllowed
-        regLabel(label.new(x=bar_index, y=(patBoxTop + patBoxBot) / 2, text="No-trade\n(" + dowName + ")", style=label.style_label_left, color=color.new(color.gray, 55), textcolor=color.white, size=lblSz))
+        regLabel(f_inkLabel(bar_index, (patBoxTop + patBoxBot) / 2, "NO TRADE · " + dowName, label.style_label_left, color.new(vMuted, 20), lblSz))
     else if not midOnlyMode and breakEitherWay
         // Mode B: neutral range plan — show both possible stop orders
         float slUp   = slEdgeMode ? patBoxBot : patBoxTop - oneRDistOf(rng)
         float slDn   = slEdgeMode ? patBoxTop : patBoxBot + oneRDistOf(rng)
-        string txtB  = f_planStopText(true,  patBoxTop, slUp) + "\nหรือ " + f_planStopText(false, patBoxBot, slDn)
-        label plLb = label.new(x=bar_index, y=(patBoxTop + patBoxBot) / 2, text=txtB, style=label.style_label_left, color=color.new(color.blue, 25), textcolor=color.white, size=planLblSz)
+        string txtB  = "รอเบรค ⇅\n" + f_planStopLine(true, patBoxTop, slUp) + "\n" + f_planStopLine(false, patBoxBot, slDn)
+        label plLb = f_inkLabel(bar_index, (patBoxTop + patBoxBot) / 2, txtB, label.style_label_left, vRange, planLblSz)
         array.push(pIsBuy, false)
         array.push(pBreakLvl, na)
         array.push(pPbTarget, na)
@@ -395,8 +438,9 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
         float pbDist   = pullbackMode == "% of Range" ? rng * (pullbackRangePct / 100) : breakLvl * (pullbackPct / 100)
         float pbTarget = isB ? patBoxTop - pbDist : patBoxBot + pbDist
         float slStop   = slEdgeMode ? (isB ? patBoxBot : patBoxTop) : (isB ? breakLvl - oneRDistOf(rng) : breakLvl + oneRDistOf(rng))
-        line  plLn = line.new(x1=bar_index, y1=breakLvl, x2=bar_index + 8, y2=breakLvl, color=color.new(color.gray, 30), width=1, style=line.style_dotted)
-        label plLb = label.new(x=bar_index, y=breakLvl, text=f_planStopText(isB, breakLvl, slStop), style=isB ? label.style_label_down : label.style_label_up, color=color.new(color.gray, 25), textcolor=color.white, size=planLblSz)
+        // แผน Pullback (gold) — เส้นจุดที่ระดับ stop order, ป้ายหมึกตัวอักษรทอง
+        line  plLn = line.new(x1=bar_index, y1=breakLvl, x2=bar_index + 8, y2=breakLvl, color=color.new(vPlan, 20), width=1, style=line.style_dotted)
+        label plLb = f_inkLabel(bar_index, breakLvl, f_planStopText(isB, breakLvl, slStop), isB ? label.style_label_down : label.style_label_up, vPlan, planLblSz)
         array.push(pIsBuy, isB)
         array.push(pBreakLvl, breakLvl)
         array.push(pPbTarget, pbTarget)
@@ -432,8 +476,9 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
             makeMid := midBuy ? (close > midEnt) : (close < midEnt)
         if makeMid
             float slMid = midSlMode == "Box Edge" ? (midBuy ? patBoxBot : patBoxTop) : (midBuy ? midEnt - rng * (midSlPct / 100) : midEnt + rng * (midSlPct / 100))
-            line  mLn = line.new(x1=bar_index, y1=midEnt, x2=bar_index + 8, y2=midEnt, color=color.new(color.teal, 10), width=1, style=line.style_dashed)
-            label mLb = label.new(x=bar_index, y=midEnt, text=f_planLimitText(midBuy, midEnt, slMid), style=midBuy ? label.style_label_up : label.style_label_down, color=color.new(color.teal, 20), textcolor=color.white, size=planLblSz)
+            // แผน Mid-Level (cyan) — เส้นประที่ระดับ limit, ป้ายหมึกตัวอักษรฟ้า
+            line  mLn = line.new(x1=bar_index, y1=midEnt, x2=bar_index + 8, y2=midEnt, color=color.new(vMid, 20), width=1, style=line.style_dashed)
+            label mLb = f_inkLabel(bar_index, midEnt, f_planLimitText(midBuy, midEnt, slMid), midBuy ? label.style_label_up : label.style_label_down, vMid, planLblSz)
             array.push(pIsBuy, midBuy)
             array.push(pBreakLvl, na)
             array.push(pPbTarget, midEnt)
@@ -487,13 +532,15 @@ if array.size(pState) > 0
                 array.set(pBreakLvl, pi, bl)
                 array.set(pPbTarget, pi, pbt)
                 array.set(pState, pi, 1)
-                line nl = line.new(x1=bar_index, y1=pbt, x2=bar_index + 8, y2=pbt, color=color.new(color.fuchsia, 20), width=1, style=line.style_solid)
+                // เบรคแล้ว → กลายเป็น limit order (gold เส้นทึบ)
+                line nl = line.new(x1=bar_index, y1=pbt, x2=bar_index + 8, y2=pbt, color=color.new(vPlan, 10), width=1, style=line.style_solid)
                 array.set(pLine, pi, nl)
                 label lb0 = array.get(pLabel, pi)
                 if not na(lb0)
                     label.set_xy(lb0, bar_index, pbt)
+                    label.set_style(lb0, dirBuy ? label.style_label_up : label.style_label_down)
                     label.set_text(lb0, f_planLimitText(dirBuy, pbt, slLim))
-                    label.set_color(lb0, color.new(color.fuchsia, 25))
+                    label.set_textcolor(lb0, vPlan)
         else if not sameBar and st == 0
             // Mode A Pullback: State 0 → wait for the box edge to break
             bool broke = isB ? (high > brk) : (low < brk)
@@ -505,14 +552,14 @@ if array.size(pState) > 0
                 if not na(pl2)
                     line.set_y1(pl2, pbT)
                     line.set_y2(pl2, pbT)
-                    line.set_color(pl2, color.new(color.fuchsia, 20))
+                    line.set_color(pl2, color.new(vPlan, 10))
                     line.set_style(pl2, line.style_solid)
                 label lb2 = array.get(pLabel, pi)
                 if not na(lb2)
                     label.set_y(lb2, pbT)
                     label.set_x(lb2, bar_index)
+                    label.set_style(lb2, isB ? label.style_label_up : label.style_label_down)
                     label.set_text(lb2, f_planLimitText(isB, pbT, slLim2))
-                    label.set_color(lb2, color.new(color.fuchsia, 25))
         else if not sameBar and st == 1
             // State 1: either Pullback wait-fill or Mid-Level wait-fill
             bool midCancel = false
@@ -521,8 +568,8 @@ if array.size(pState) > 0
                 bool willFill = isB ? (low <= pbT) : (high >= pbT)
                 midCancel := brokeOut and not willFill
             if midCancel
-                regLabel(label.new(x=bar_index, y=pbT, text="Mid cancel\n(เบรคกรอบ)", style=isB ? label.style_label_down : label.style_label_up, color=color.new(color.gray, 50), textcolor=color.white, size=lblSz))
-                regLine(line.new(x1=array.get(pCreateBar, pi), y1=pbT, x2=bar_index, y2=pbT, color=color.new(color.gray, 60), width=1, style=line.style_dashed))
+                regLabel(f_inkLabel(bar_index, pbT, "ยกเลิก MID\n(เบรคกรอบ)", isB ? label.style_label_down : label.style_label_up, color.new(vMuted, 20), lblSz))
+                regLine(line.new(x1=array.get(pCreateBar, pi), y1=pbT, x2=bar_index, y2=pbT, color=color.new(vMuted, 70), width=1, style=line.style_dashed))
                 line.delete(array.get(pLine, pi))
                 label.delete(array.get(pLabel, pi))
                 removePlan := true
@@ -559,22 +606,32 @@ if array.size(pState) > 0
                 array.push(tTradeRR, trr)
                 array.push(tOriginTime, time)
                 array.push(tType, ptype)
-                color trailCol = ptype == 1 ? color.new(color.teal, 40) : color.new(color.gray, 45)
-                regLine(line.new(x1=array.get(pCreateBar, pi), y1=ent, x2=bar_index, y2=ent, color=trailCol, width=1, style=line.style_dashed))
-                string ordType = ptype == 1 ? "Mid" : "Limit"
-                regLabel(label.new(x=bar_index, y=ent, text=(isB ? "BUY " : "SELL ") + ordType + "\n@ " + str.tostring(ent, "#.#####") + "\nSize: " + str.tostring(lot, "#.##") + " Lots\nTP: " + str.tostring(trr, "#.##") + "R", color=color.new(color.black, 60), textcolor=color.new(color.white, 15), style=isB ? label.style_label_up : label.style_label_down, size=lblSz))
-                regLabel(label.new(x=bar_index, y=ent, text="", style=label.style_circle, color=color.new(isB ? color.green : color.red, 65), size=lblSz))
-                // Entry signal arrow — สามเหลี่ยมชี้จุดเปิดออเดอร์
-                regLabel(label.new(x=bar_index, y=ent, text="", style=isB ? label.style_arrowup : label.style_arrowdown, color=color.new(isB ? color.green : color.red, tpSlBrightness), size=entryArrowSz))
-                // TP horizontal price marker (short — ไม่ยาวไปจุดปิด) + label
-                regLine(line.new(x1=bar_index, y1=tp, x2=bar_index + tpSlMarkerLen, y2=tp, color=color.new(color.green, tpSlBrightness), width=tpSlMarkerWidth, style=line.style_solid))
-                regLabel(label.new(x=bar_index + tpSlMarkerLen, y=tp, text="TP " + str.tostring(tp, priceFmt), style=label.style_label_left, color=color.new(color.green, 40), textcolor=color.white, size=lblSz))
-                // SL horizontal price marker (short — ไม่ยาวไปจุดปิด) + label
-                regLine(line.new(x1=bar_index, y1=sl, x2=bar_index + tpSlMarkerLen, y2=sl, color=color.new(color.red, tpSlBrightness), width=tpSlMarkerWidth, style=line.style_solid))
-                regLabel(label.new(x=bar_index + tpSlMarkerLen, y=sl, text="SL " + str.tostring(sl, priceFmt), style=label.style_label_left, color=color.new(color.red, 40), textcolor=color.white, size=lblSz))
-                // Bright, adjustable vertical arrows entry → TP / SL
-                regLine(line.new(x1=bar_index, y1=ent, x2=bar_index, y2=tp, color=color.new(color.green, tpSlBrightness), width=tpSlArrowWidth, style=line.style_arrow_right))
-                regLine(line.new(x1=bar_index, y1=ent, x2=bar_index, y2=sl, color=color.new(color.red,   tpSlBrightness), width=tpSlArrowWidth, style=line.style_arrow_right))
+                // ---------- Trade visual (ออกแบบเป็นชุดเดียว) ----------
+                color dirCol = isB ? vBull : vBear
+                int   zoneR  = bar_index + tpSlMarkerLen
+                // 1) เส้นโยงจากจุดสร้างแผน → จุดเข้า (จางมาก แค่บอกที่มา)
+                if showTrailLine
+                    regLine(line.new(x1=array.get(pCreateBar, pi), y1=ent, x2=bar_index, y2=ent, color=color.new(ptype == 1 ? vMid : vPlan, 70), width=1, style=line.style_dotted))
+                // 2) R:R Zone — กล่องโปร่ง entry→TP (เขียว) / entry→SL (แดง) แบบเครื่องมือ Long/Short Position
+                if tradeVisual != "Arrows"
+                    regZoneBox(box.new(left=bar_index, top=math.max(ent, tp), right=zoneR, bottom=math.min(ent, tp), bgcolor=color.new(vBull, 84), border_color=color.new(vBull, 70), border_width=1))
+                    regZoneBox(box.new(left=bar_index, top=math.max(ent, sl), right=zoneR, bottom=math.min(ent, sl), bgcolor=color.new(vBear, 84), border_color=color.new(vBear, 70), border_width=1))
+                // 3) ลูกศรแนวตั้ง entry → TP / SL (โหมด Arrows / Both)
+                if tradeVisual != "R:R Zone"
+                    regLine(line.new(x1=bar_index, y1=ent, x2=bar_index, y2=tp, color=color.new(vBull, tpSlBrightness), width=tpSlArrowWidth, style=line.style_arrow_right))
+                    regLine(line.new(x1=bar_index, y1=ent, x2=bar_index, y2=sl, color=color.new(vBear, tpSlBrightness), width=tpSlArrowWidth, style=line.style_arrow_right))
+                // 4) เส้นระดับ TP / SL สั้นๆ + ป้ายราคา (ป้ายหมึก ตัวอักษรสี)
+                regLine(line.new(x1=bar_index, y1=tp, x2=zoneR, y2=tp, color=color.new(vBull, tpSlBrightness), width=tpSlMarkerWidth, style=line.style_solid))
+                regLine(line.new(x1=bar_index, y1=sl, x2=zoneR, y2=sl, color=color.new(vBear, tpSlBrightness), width=tpSlMarkerWidth, style=line.style_solid))
+                regLabel(f_inkLabel(zoneR, tp, "TP " + f_px(tp), label.style_label_left, vBull, lblSz))
+                regLabel(f_inkLabel(zoneR, sl, "SL " + f_px(sl), label.style_label_left, vBear, lblSz))
+                // 5) ลูกศร signal สามเหลี่ยมที่จุดเข้า
+                regLabel(label.new(x=bar_index, y=ent, text="", style=isB ? label.style_arrowup : label.style_arrowdown, color=color.new(dirCol, tpSlBrightness), size=entryArrowSz))
+                // 6) ป้ายข้อมูลเข้าไม้ — วางด้านซ้ายของลูกศร ไม่ทับโซน
+                if showEntryInfo
+                    string ordType = ptype == 1 ? "MID" : "LIMIT"
+                    string entTxt  = (isB ? "BUY " : "SELL ") + ordType + "\n@ " + f_px(ent) + "\n" + str.tostring(lot, "#.##") + " lot · " + str.tostring(trr, "#.##") + "R"
+                    regLabel(f_inkLabel(bar_index - 1, ent, entTxt, label.style_label_right, dirCol, lblSz))
                 line.delete(array.get(pLine, pi))
                 label.delete(array.get(pLabel, pi))
                 removePlan := true
@@ -636,15 +693,16 @@ if array.size(tEntry) > 0
                 if array.size(resIsWin) > 5000
                     array.shift(resIsWin), array.shift(resTradeRR), array.shift(resTime)
                     array.shift(resIsSmall), array.shift(resIsRec), array.shift(resTpPts)
+                // ผลลัพธ์ = ป้ายทึบให้เด่น + ขีดสั้นที่ระดับปิด
                 if closedWin
-                    regLabel(label.new(x=bar_index, y=tp, text="Win (" + typeTxt + ")\n+" + str.tostring(trr, "#.##") + "R", color=color.new(color.green, 20), textcolor=color.white, style=isB ? label.style_label_down : label.style_label_up, size=lblSz))
-                    regLine(line.new(x1=bar_index - 3, y1=tp, x2=bar_index + 3, y2=tp, color=color.green, width=2))
+                    regLabel(f_solidLabel(bar_index, tp, "WIN · " + typeTxt + "\n+" + str.tostring(trr, "#.##") + "R", isB ? label.style_label_down : label.style_label_up, color.new(vBull, 5), vDarkTx, lblSz))
+                    regLine(line.new(x1=bar_index - 2, y1=tp, x2=bar_index + 2, y2=tp, color=vBull, width=2))
                 else
-                    regLabel(label.new(x=bar_index, y=sl, text="Loss (" + typeTxt + ")\n" + str.tostring(lossR, "#.##") + "R", color=color.new(color.red, 20), textcolor=color.white, style=isB ? label.style_label_up : label.style_label_down, size=lblSz))
-                    regLine(line.new(x1=bar_index - 3, y1=sl, x2=bar_index + 3, y2=sl, color=color.red, width=2))
+                    regLabel(f_solidLabel(bar_index, sl, "LOSS · " + typeTxt + "\n" + str.tostring(lossR, "#.##") + "R", isB ? label.style_label_up : label.style_label_down, color.new(vBear, 5), color.rgb(255, 255, 255), lblSz))
+                    regLine(line.new(x1=bar_index - 2, y1=sl, x2=bar_index + 2, y2=sl, color=vBear, width=2))
                 if showTradePath
                     float closePx = closedWin ? tp : sl
-                    color pathCol = closedWin ? color.new(color.green, 60) : color.new(color.red, 60)
+                    color pathCol = closedWin ? color.new(vBull, 65) : color.new(vBear, 65)
                     regLine(line.new(x1=array.get(tBarIdx, i), y1=ent, x2=bar_index, y2=closePx, color=pathCol, width=1, style=line.style_dashed))
                 array.remove(tIsBuy, i), array.remove(tEntry, i), array.remove(tSL, i), array.remove(tTP, i)
                 array.remove(tBarIdx, i), array.remove(tPipsDist, i), array.remove(tTradeRR, i), array.remove(tOriginTime, i), array.remove(tType, i)

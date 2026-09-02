@@ -647,7 +647,12 @@ if array.size(pState) > 0
                     box tb2 = box.new(left=bar_index, top=math.max(ent, sl), right=zoneR, bottom=math.min(ent, sl), bgcolor=color.new(vBear, 84), border_color=color.new(vBear, 70), border_width=1)
                     regZoneBox(tb1), array.push(art.bxs, tb1)
                     regZoneBox(tb2), array.push(art.bxs, tb2)
-                // 3) ลูกศรแนวตั้ง entry → TP / SL (โหมด Arrows / Both)
+                // 3a) เส้นประโยง entry ↔ TP / SL (แสดงเสมอ — เชื่อมออเดอร์)
+                line tlDashTp = line.new(x1=bar_index, y1=ent, x2=bar_index, y2=tp, color=color.new(vBull, 50), width=1, style=line.style_dashed)
+                line tlDashSl = line.new(x1=bar_index, y1=ent, x2=bar_index, y2=sl, color=color.new(vBear, 50), width=1, style=line.style_dashed)
+                regLine(tlDashTp), array.push(art.lns, tlDashTp)
+                regLine(tlDashSl), array.push(art.lns, tlDashSl)
+                // 3b) ลูกศรแนวตั้ง entry → TP / SL (โหมด Arrows / Both)
                 if tradeVisual != "R:R Zone"
                     line tl2 = line.new(x1=bar_index, y1=ent, x2=bar_index, y2=tp, color=color.new(vBull, tpSlBrightness), width=tpSlArrowWidth, style=line.style_arrow_right)
                     line tl3 = line.new(x1=bar_index, y1=ent, x2=bar_index, y2=sl, color=color.new(vBear, tpSlBrightness), width=tpSlArrowWidth, style=line.style_arrow_right)
@@ -671,6 +676,11 @@ if array.size(pState) > 0
                 if showEntryInfo
                     label tlbCirc = label.new(x=bar_index, y=ent, text="", style=label.style_circle, color=color.new(dirCol, 30), size=entryArrowSz)
                     regLabel(tlbCirc), array.push(art.lbs, tlbCirc)
+                // 7) วงกลมเล็กที่ TP และ SL — เชื่อมกับเส้นประ
+                label tlbCircTp = label.new(x=bar_index, y=tp, text="", style=label.style_circle, color=color.new(vBull, 30), size=size.small)
+                label tlbCircSl = label.new(x=bar_index, y=sl, text="", style=label.style_circle, color=color.new(vBear, 30), size=size.small)
+                regLabel(tlbCircTp), array.push(art.lbs, tlbCircTp)
+                regLabel(tlbCircSl), array.push(art.lbs, tlbCircSl)
                 array.push(tArt, art)
                 line.delete(array.get(pLine, pi))
                 label.delete(array.get(pLabel, pi))

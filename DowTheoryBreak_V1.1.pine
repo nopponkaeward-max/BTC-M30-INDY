@@ -1,6 +1,6 @@
 //@version=6
 
-indicator("DowTheoryBreak_V1.1", shorttitle="DowTheoryBreak_V1.1 BTC30M", overlay=true, max_boxes_count=500, max_labels_count=500, max_lines_count=500)
+indicator("V1.1 BTC30M", shorttitle="V1.1 BTC30M", overlay=true, max_boxes_count=500, max_labels_count=500, max_lines_count=500)
 
 // ==========================================
 // --- 1. INPUT SETTINGS ---

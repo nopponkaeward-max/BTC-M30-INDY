@@ -148,6 +148,7 @@ entryArrowSz = switch entryArrowSizeOpt
     =>          size.auto
 showEntryInfo  = input.bool(true, title="Show Entry Info Label (lot / R)", group="Visual Style", tooltip="ป้ายข้อมูลที่จุดเข้าไม้: ประเภทออเดอร์, ราคา, lot, R", display=display.none)
 showTrailLine  = input.bool(true, title="Show Plan → Entry Trail (เส้นโยงจากจุดสร้างแผน)", group="Visual Style", display=display.none)
+labelOffset    = input.int(3, title="Label Offset (bars ห่างจากแท่งเทียนไปทางขวา)", minval=0, maxval=30, group="Visual Style", tooltip="ระยะห่างจากแท่งเทียนปัจจุบันไปทางขวาสำหรับป้ายทั้งหมด (plan / entry info / win-loss) — ยิ่งมาก ยิ่งลอยหน้าแท่งเทียน ไม่บังราคา", display=display.none)
 
 // --- Palette (ต่อเนื่องกับตารางโทน gold-dark) ---
 bool  vDark   = chartTheme == "Dark"
@@ -413,13 +414,13 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
     // --- Create pending Pullback% plan ---
     bool midOnlyMode = useMidLevel and midOnly
     if not tradeDayAllowed
-        regLabel(f_inkLabel(bar_index, (patBoxTop + patBoxBot) / 2, "NO TRADE · " + dowName, label.style_label_left, color.new(vMuted, 20), lblSz))
+        regLabel(f_inkLabel(bar_index + labelOffset, (patBoxTop + patBoxBot) / 2, "NO TRADE · " + dowName, label.style_label_left, color.new(vMuted, 20), lblSz))
     else if not midOnlyMode and breakEitherWay
         // Mode B: neutral range plan — show both possible stop orders
         float slUp   = slEdgeMode ? patBoxBot : patBoxTop - oneRDistOf(rng)
         float slDn   = slEdgeMode ? patBoxTop : patBoxBot + oneRDistOf(rng)
         string txtB  = "รอเบรค ⇅\n" + f_planStopLine(true, patBoxTop, slUp) + "\n" + f_planStopLine(false, patBoxBot, slDn)
-        label plLb = f_inkLabel(bar_index, (patBoxTop + patBoxBot) / 2, txtB, label.style_label_left, vRange, planLblSz)
+        label plLb = f_inkLabel(bar_index + labelOffset, (patBoxTop + patBoxBot) / 2, txtB, label.style_label_left, vRange, planLblSz)
         array.push(pIsBuy, false)
         array.push(pBreakLvl, na)
         array.push(pPbTarget, na)
@@ -438,9 +439,9 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
         float pbDist   = pullbackMode == "% of Range" ? rng * (pullbackRangePct / 100) : breakLvl * (pullbackPct / 100)
         float pbTarget = isB ? patBoxTop - pbDist : patBoxBot + pbDist
         float slStop   = slEdgeMode ? (isB ? patBoxBot : patBoxTop) : (isB ? breakLvl - oneRDistOf(rng) : breakLvl + oneRDistOf(rng))
-        // แผน Pullback (gold) — เส้นจุดที่ระดับ stop order, ป้ายหมึกตัวอักษรทอง
-        line  plLn = line.new(x1=bar_index, y1=breakLvl, x2=bar_index + 8, y2=breakLvl, color=color.new(vPlan, 20), width=1, style=line.style_dotted)
-        label plLb = f_inkLabel(bar_index, breakLvl, f_planStopText(isB, breakLvl, slStop), isB ? label.style_label_down : label.style_label_up, vPlan, planLblSz)
+        // แผน Pullback (gold) — เส้นจุดจากแท่งไปยังป้ายที่ระดับ stop order (อยู่หน้าแท่ง)
+        line  plLn = line.new(x1=bar_index, y1=breakLvl, x2=bar_index + labelOffset, y2=breakLvl, color=color.new(vPlan, 20), width=1, style=line.style_dotted)
+        label plLb = f_inkLabel(bar_index + labelOffset, breakLvl, f_planStopText(isB, breakLvl, slStop), label.style_label_left, vPlan, planLblSz)
         array.push(pIsBuy, isB)
         array.push(pBreakLvl, breakLvl)
         array.push(pPbTarget, pbTarget)
@@ -476,9 +477,9 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
             makeMid := midBuy ? (close > midEnt) : (close < midEnt)
         if makeMid
             float slMid = midSlMode == "Box Edge" ? (midBuy ? patBoxBot : patBoxTop) : (midBuy ? midEnt - rng * (midSlPct / 100) : midEnt + rng * (midSlPct / 100))
-            // แผน Mid-Level (cyan) — เส้นประที่ระดับ limit, ป้ายหมึกตัวอักษรฟ้า
-            line  mLn = line.new(x1=bar_index, y1=midEnt, x2=bar_index + 8, y2=midEnt, color=color.new(vMid, 20), width=1, style=line.style_dashed)
-            label mLb = f_inkLabel(bar_index, midEnt, f_planLimitText(midBuy, midEnt, slMid), midBuy ? label.style_label_up : label.style_label_down, vMid, planLblSz)
+            // แผน Mid-Level (cyan) — เส้นประจากแท่งไปยังป้ายที่ระดับ limit (อยู่หน้าแท่ง)
+            line  mLn = line.new(x1=bar_index, y1=midEnt, x2=bar_index + labelOffset, y2=midEnt, color=color.new(vMid, 20), width=1, style=line.style_dashed)
+            label mLb = f_inkLabel(bar_index + labelOffset, midEnt, f_planLimitText(midBuy, midEnt, slMid), label.style_label_left, vMid, planLblSz)
             array.push(pIsBuy, midBuy)
             array.push(pBreakLvl, na)
             array.push(pPbTarget, midEnt)
@@ -510,7 +511,7 @@ if array.size(pState) > 0
         bool  removePlan = false
         line plnLn = array.get(pLine, pi)
         if not na(plnLn)
-            line.set_x2(plnLn, bar_index + 3)
+            line.set_x2(plnLn, bar_index + labelOffset)
         if expired
             line.delete(array.get(pLine, pi))
             label.delete(array.get(pLabel, pi))
@@ -533,12 +534,12 @@ if array.size(pState) > 0
                 array.set(pPbTarget, pi, pbt)
                 array.set(pState, pi, 1)
                 // เบรคแล้ว → กลายเป็น limit order (gold เส้นทึบ)
-                line nl = line.new(x1=bar_index, y1=pbt, x2=bar_index + 8, y2=pbt, color=color.new(vPlan, 10), width=1, style=line.style_solid)
+                line nl = line.new(x1=bar_index, y1=pbt, x2=bar_index + labelOffset, y2=pbt, color=color.new(vPlan, 10), width=1, style=line.style_solid)
                 array.set(pLine, pi, nl)
                 label lb0 = array.get(pLabel, pi)
                 if not na(lb0)
-                    label.set_xy(lb0, bar_index, pbt)
-                    label.set_style(lb0, dirBuy ? label.style_label_up : label.style_label_down)
+                    label.set_xy(lb0, bar_index + labelOffset, pbt)
+                    label.set_style(lb0, label.style_label_left)
                     label.set_text(lb0, f_planLimitText(dirBuy, pbt, slLim))
                     label.set_textcolor(lb0, vPlan)
         else if not sameBar and st == 0
@@ -557,8 +558,8 @@ if array.size(pState) > 0
                 label lb2 = array.get(pLabel, pi)
                 if not na(lb2)
                     label.set_y(lb2, pbT)
-                    label.set_x(lb2, bar_index)
-                    label.set_style(lb2, isB ? label.style_label_up : label.style_label_down)
+                    label.set_x(lb2, bar_index + labelOffset)
+                    label.set_style(lb2, label.style_label_left)
                     label.set_text(lb2, f_planLimitText(isB, pbT, slLim2))
         else if not sameBar and st == 1
             // State 1: either Pullback wait-fill or Mid-Level wait-fill
@@ -568,7 +569,7 @@ if array.size(pState) > 0
                 bool willFill = isB ? (low <= pbT) : (high >= pbT)
                 midCancel := brokeOut and not willFill
             if midCancel
-                regLabel(f_inkLabel(bar_index, pbT, "ยกเลิก MID\n(เบรคกรอบ)", isB ? label.style_label_down : label.style_label_up, color.new(vMuted, 20), lblSz))
+                regLabel(f_inkLabel(bar_index + labelOffset, pbT, "ยกเลิก MID\n(เบรคกรอบ)", label.style_label_left, color.new(vMuted, 20), lblSz))
                 regLine(line.new(x1=array.get(pCreateBar, pi), y1=pbT, x2=bar_index, y2=pbT, color=color.new(vMuted, 70), width=1, style=line.style_dashed))
                 line.delete(array.get(pLine, pi))
                 label.delete(array.get(pLabel, pi))
@@ -627,11 +628,11 @@ if array.size(pState) > 0
                 regLabel(f_inkLabel(zoneR, sl, "SL " + f_px(sl), label.style_label_left, vBear, lblSz))
                 // 5) ลูกศร signal สามเหลี่ยมที่จุดเข้า
                 regLabel(label.new(x=bar_index, y=ent, text="", style=isB ? label.style_arrowup : label.style_arrowdown, color=color.new(dirCol, tpSlBrightness), size=entryArrowSz))
-                // 6) ป้ายข้อมูลเข้าไม้ — วางด้านซ้ายของลูกศร ไม่ทับโซน
+                // 6) ป้ายข้อมูลเข้าไม้ — วางด้านขวาถัดจากโซน R:R (หน้าแท่งเทียน)
                 if showEntryInfo
                     string ordType = ptype == 1 ? "MID" : "LIMIT"
                     string entTxt  = (isB ? "BUY " : "SELL ") + ordType + "\n@ " + f_px(ent) + "\n" + str.tostring(lot, "#.##") + " lot · " + str.tostring(trr, "#.##") + "R"
-                    regLabel(f_inkLabel(bar_index - 1, ent, entTxt, label.style_label_right, dirCol, lblSz))
+                    regLabel(f_inkLabel(zoneR + labelOffset, ent, entTxt, label.style_label_left, dirCol, lblSz))
                 line.delete(array.get(pLine, pi))
                 label.delete(array.get(pLabel, pi))
                 removePlan := true
@@ -695,10 +696,10 @@ if array.size(tEntry) > 0
                     array.shift(resIsSmall), array.shift(resIsRec), array.shift(resTpPts)
                 // ผลลัพธ์ = ป้ายทึบให้เด่น + ขีดสั้นที่ระดับปิด
                 if closedWin
-                    regLabel(f_solidLabel(bar_index, tp, "WIN · " + typeTxt + "\n+" + str.tostring(trr, "#.##") + "R", isB ? label.style_label_down : label.style_label_up, color.new(vBull, 5), vDarkTx, lblSz))
+                    regLabel(f_solidLabel(bar_index + labelOffset, tp, "WIN · " + typeTxt + "  +" + str.tostring(trr, "#.##") + "R", label.style_label_left, color.new(vBull, 5), vDarkTx, lblSz))
                     regLine(line.new(x1=bar_index - 2, y1=tp, x2=bar_index + 2, y2=tp, color=vBull, width=2))
                 else
-                    regLabel(f_solidLabel(bar_index, sl, "LOSS · " + typeTxt + "\n" + str.tostring(lossR, "#.##") + "R", isB ? label.style_label_up : label.style_label_down, color.new(vBear, 5), color.rgb(255, 255, 255), lblSz))
+                    regLabel(f_solidLabel(bar_index + labelOffset, sl, "LOSS · " + typeTxt + "  " + str.tostring(lossR, "#.##") + "R", label.style_label_left, color.new(vBear, 5), color.rgb(255, 255, 255), lblSz))
                     regLine(line.new(x1=bar_index - 2, y1=sl, x2=bar_index + 2, y2=sl, color=vBear, width=2))
                 if showTradePath
                     float closePx = closedWin ? tp : sl

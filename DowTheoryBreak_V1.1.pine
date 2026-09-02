@@ -659,11 +659,9 @@ if array.size(pState) > 0
                 // 5) ลูกศร signal สามเหลี่ยมที่จุดเข้า
                 label tlbArr = label.new(x=bar_index, y=ent, text="", style=isB ? label.style_arrowup : label.style_arrowdown, color=color.new(dirCol, tpSlBrightness), size=entryArrowSz)
                 regLabel(tlbArr), array.push(art.lbs, tlbArr)
-                // 6) ป้ายข้อมูลเข้าไม้ — วางด้านขวาถัดจากโซน R:R (หน้าแท่งเทียน)
+                // 6) ป้ายข้อมูลเข้าไม้ — เหลือแค่ BUY / SELL หน้าแท่งเทียน
                 if showEntryInfo
-                    string ordType = ptype == 1 ? "MID" : "LIMIT"
-                    string entTxt  = (isB ? "BUY " : "SELL ") + ordType + "\n@ " + f_px(ent) + "\n" + str.tostring(lot, "#.##") + " lot · " + str.tostring(trr, "#.##") + "R"
-                    label tlbInfo = f_inkLabel(zoneR + labelOffset, ent, entTxt, label.style_label_left, dirCol, lblSz)
+                    label tlbInfo = f_inkLabel(zoneR + labelOffset, ent, isB ? "BUY" : "SELL", label.style_label_left, dirCol, lblSz)
                     regLabel(tlbInfo), array.push(art.lbs, tlbInfo)
                 array.push(tArt, art)
                 line.delete(array.get(pLine, pi))

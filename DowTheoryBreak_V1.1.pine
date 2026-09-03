@@ -554,6 +554,7 @@ if array.size(pState) > 0
                 float pbd  = pullbackMode == "% of Range" ? rngv * (pullbackRangePct / 100) : bl * (pullbackPct / 100)
                 float pbt  = dirBuy ? tp_ - pbd : bt_ + pbd
                 float slLim = slEdgeMode ? (dirBuy ? bt_ : tp_) : (dirBuy ? pbt - oneRDistOf(rngv) : pbt + oneRDistOf(rngv))
+                alert((dirBuy ? "BUY" : "SELL") + " STOP Break\nBreak: " + f_px(bl) + "\nEntry: " + f_px(pbt) + "\nSL: " + f_px(slLim), alert.freq_once_per_bar)
                 array.set(pIsBuy, pi, dirBuy)
                 array.set(pBreakLvl, pi, bl)
                 array.set(pPbTarget, pi, pbt)
@@ -573,6 +574,7 @@ if array.size(pState) > 0
             if broke
                 float rngv2 = array.get(pRange, pi)
                 float slLim2 = slEdgeMode ? (isB ? array.get(pBot, pi) : array.get(pTop, pi)) : (isB ? pbT - oneRDistOf(rngv2) : pbT + oneRDistOf(rngv2))
+                alert((isB ? "BUY" : "SELL") + " STOP Break\nBreak: " + f_px(brk) + "\nEntry: " + f_px(pbT) + "\nSL: " + f_px(slLim2), alert.freq_once_per_bar)
                 array.set(pState, pi, 1)
                 line pl2 = array.get(pLine, pi)
                 if not na(pl2)
@@ -633,6 +635,9 @@ if array.size(pState) > 0
                 array.push(tTradeRR, trr)
                 array.push(tOriginTime, time)
                 array.push(tType, ptype)
+                // --- Alert: order filled ---
+                string _alertType = ptype == 1 ? "LIMIT (Mid-Level)" : "LIMIT (Pullback)"
+                alert((isB ? "BUY " : "SELL ") + _alertType + "\nEntry: " + f_px(ent) + "\nSL: " + f_px(sl) + "\nTP: " + f_px(tp) + "\nLot: " + str.tostring(lot, "#.####") + "\nR:R: " + str.tostring(trr, "#.##"), alert.freq_once_per_bar)
                 // ---------- Trade visual (ออกแบบเป็นชุดเดียว, track handle ต่อเทรด) ----------
                 color dirCol = isB ? vBull : vBear
                 int   zoneR  = bar_index + tpSlMarkerLen

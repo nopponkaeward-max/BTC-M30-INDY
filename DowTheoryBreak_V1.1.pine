@@ -302,11 +302,11 @@ var array<int>   pType     = array.new_int()   // 0 = pullback, 1 = mid-level
 var array<line>  pLine     = array.new_line()
 var array<label> pLabel    = array.new_label()
 var array<label> pWaitLabel= array.new<label>()
-// preview TP/SL ของแต่ละ plan (เส้นประสั้นทางขวา + ป้ายราคา) — na จนกว่าจะรู้ทิศ/entry
-var array<line>  pTpLine    = array.new_line()
-var array<line>  pSlLine    = array.new_line()
-var array<label> pTpTag     = array.new_label()
-var array<label> pSlTag     = array.new_label()
+// preview TP/SL — ชุดเดียว โชว์เฉพาะ plan ล่าสุดที่ยังไม่ fill (เส้นประสั้นทางขวา + ป้ายราคา)
+var line  gTpLine = na
+var line  gSlLine = na
+var label gTpTag  = na
+var label gSlTag  = na
 
 // --- Active trade arrays ---
 var array<bool>  tIsBuy     = array.new_bool()
@@ -510,8 +510,6 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
         array.push(pLine, na)
         array.push(pLabel, plLb)
         array.push(pWaitLabel, f_inkLabel(bar_index + labelOffset, (patBoxTop + patBoxBot) / 2, "รอเบรค ⇅ · STOP", label.style_label_left, vRange, lblSz))
-        // ยังไม่รู้ทิศ → preview TP/SL สร้างตอนเบรค
-        array.push(pTpLine, na), array.push(pSlLine, na), array.push(pTpTag, na), array.push(pSlTag, na)
         alert("NEW PLAN · RANGE ⇅\nBUY STOP: " + f_px(patBoxTop) + "  SL: " + f_px(slUp) + "\nSELL STOP: " + f_px(patBoxBot) + "  SL: " + f_px(slDn), alert.freq_once_per_bar)
     else if not midOnlyMode
         // Mode A: direction fixed by the pattern.
@@ -535,11 +533,6 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
         array.push(pLine, plLn)
         array.push(pLabel, plLb)
         array.push(pWaitLabel, f_inkLabel(bar_index + labelOffset, breakLvl, "รอ " + (isB ? "BUY" : "SELL") + " STOP ที่นี่ · " + f_px(breakLvl), label.style_label_left, vPlan, lblSz))
-        // preview TP/SL — คำนวณจากจุดเข้า pullback
-        [pvOneRa, pvSla, pvTpa] = f_planLevels(isB, 0, pbTarget, patBoxTop, patBoxBot, rng)
-        array.push(pTpLine, f_planPrevLine(pvTpa, vBull)), array.push(pSlLine, f_planPrevLine(pvSla, vBear))
-        array.push(pTpTag, f_priceTag(bar_index + labelOffset + planPrevLen, pvTpa, "TP " + f_px(pvTpa), vBull))
-        array.push(pSlTag, f_priceTag(bar_index + labelOffset + planPrevLen, pvSla, "SL " + f_px(pvSla), vBear))
         alert("NEW PLAN · " + (isB ? "BUY" : "SELL") + " STOP\nBreak Level: " + f_px(breakLvl) + "\nPullback Entry: " + f_px(pbTarget) + "\nSL: " + f_px(slStop), alert.freq_once_per_bar)
 
     // --- Mid-Level parallel entry ---
@@ -580,11 +573,6 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
             array.push(pLine, mLn)
             array.push(pLabel, mLb)
             array.push(pWaitLabel, f_inkLabel(bar_index + labelOffset, midEnt, "รอ " + (midBuy ? "BUY" : "SELL") + " LIMIT ที่นี่ · " + f_px(midEnt), label.style_label_left, vMid, lblSz))
-            // preview TP/SL — คำนวณจากจุดเข้า mid-level
-            [pvOneRm, pvSlm, pvTpm] = f_planLevels(midBuy, 1, midEnt, patBoxTop, patBoxBot, rng)
-            array.push(pTpLine, f_planPrevLine(pvTpm, vBull)), array.push(pSlLine, f_planPrevLine(pvSlm, vBear))
-            array.push(pTpTag, f_priceTag(bar_index + labelOffset + planPrevLen, pvTpm, "TP " + f_px(pvTpm), vBull))
-            array.push(pSlTag, f_priceTag(bar_index + labelOffset + planPrevLen, pvSlm, "SL " + f_px(pvSlm), vBear))
             alert("NEW PLAN · " + (midBuy ? "BUY" : "SELL") + " LIMIT (Mid-Level)\nEntry: " + f_px(midEnt) + "\nSL: " + f_px(slMid), alert.freq_once_per_bar)
 
 // ==========================================
@@ -606,25 +594,10 @@ if array.size(pState) > 0
         line plnLn = array.get(pLine, pi)
         if not na(plnLn)
             line.set_x2(plnLn, bar_index + labelOffset + 10)
-        // เลื่อน preview TP/SL ให้อยู่ทางขวาของแท่งปัจจุบันเสมอ (เส้นสั้น ไม่บังแท่ง)
-        int prevX1 = bar_index + labelOffset
-        line ptl_ = array.get(pTpLine, pi)
-        line psl_ = array.get(pSlLine, pi)
-        label ptt_ = array.get(pTpTag, pi)
-        label pst_ = array.get(pSlTag, pi)
-        if not na(ptl_)
-            line.set_x1(ptl_, prevX1), line.set_x2(ptl_, prevX1 + planPrevLen)
-        if not na(psl_)
-            line.set_x1(psl_, prevX1), line.set_x2(psl_, prevX1 + planPrevLen)
-        if not na(ptt_)
-            label.set_x(ptt_, prevX1 + planPrevLen)
-        if not na(pst_)
-            label.set_x(pst_, prevX1 + planPrevLen)
         if expired
             line.delete(array.get(pLine, pi))
             label.delete(array.get(pLabel, pi))
             label.delete(array.get(pWaitLabel, pi))
-            line.delete(ptl_), line.delete(psl_), label.delete(ptt_), label.delete(pst_)
             removePlan := true
         else if not sameBar and st == 0 and anyBrk
             // Mode B: neutral range — resolve direction on whichever edge breaks first.
@@ -658,12 +631,6 @@ if array.size(pState) > 0
                     label.set_xy(wl0, bar_index + labelOffset, pbt)
                     label.set_text(wl0, "รอ " + (dirBuy ? "BUY" : "SELL") + " LIMIT ที่นี่ · " + f_px(pbt))
                     label.set_textcolor(wl0, vPlan)
-                // รู้ทิศแล้ว → สร้าง preview TP/SL
-                [pvOneRb, pvSlb, pvTpb] = f_planLevels(dirBuy, 0, pbt, tp_, bt_, rngv)
-                array.set(pTpLine, pi, f_planPrevLine(pvTpb, vBull))
-                array.set(pSlLine, pi, f_planPrevLine(pvSlb, vBear))
-                array.set(pTpTag, pi, f_priceTag(bar_index + labelOffset + planPrevLen, pvTpb, "TP " + f_px(pvTpb), vBull))
-                array.set(pSlTag, pi, f_priceTag(bar_index + labelOffset + planPrevLen, pvSlb, "SL " + f_px(pvSlb), vBear))
         else if not sameBar and st == 0
             // Mode A Pullback: State 0 → wait for the box edge to break
             bool broke = isB ? (high > brk) : (low < brk)
@@ -702,7 +669,6 @@ if array.size(pState) > 0
                 line.delete(array.get(pLine, pi))
                 label.delete(array.get(pLabel, pi))
                 label.delete(array.get(pWaitLabel, pi))
-                line.delete(ptl_), line.delete(psl_), label.delete(ptt_), label.delete(pst_)
                 alert("MID CANCEL · " + (isB ? "BUY" : "SELL") + " LIMIT\nEntry: " + f_px(pbT) + "\nเบรคกรอบ — ยกเลิก", alert.freq_once_per_bar)
                 removePlan := true
             bool reached = not midCancel and (isB ? low <= pbT : high >= pbT)
@@ -781,13 +747,11 @@ if array.size(pState) > 0
                 line.delete(array.get(pLine, pi))
                 label.delete(array.get(pLabel, pi))
                 label.delete(array.get(pWaitLabel, pi))
-                line.delete(ptl_), line.delete(psl_), label.delete(ptt_), label.delete(pst_)
                 removePlan := true
         if removePlan
             array.remove(pIsBuy, pi), array.remove(pBreakLvl, pi), array.remove(pPbTarget, pi)
             array.remove(pTop, pi), array.remove(pBot, pi), array.remove(pRange, pi)
             array.remove(pCreateBar, pi), array.remove(pState, pi), array.remove(pAnyBreak, pi), array.remove(pType, pi), array.remove(pLine, pi), array.remove(pLabel, pi), array.remove(pWaitLabel, pi)
-            array.remove(pTpLine, pi), array.remove(pSlLine, pi), array.remove(pTpTag, pi), array.remove(pSlTag, pi)
         pi -= 1
 
 // --- Update holding labels to stay in front of candles ---
@@ -803,6 +767,33 @@ if array.size(pWaitLabel) > 0
         label wl = array.get(pWaitLabel, k)
         if not na(wl)
             label.set_x(wl, bar_index + labelOffset)
+
+// --- Preview TP/SL: โชว์เฉพาะ plan ล่าสุดที่ยังไม่ fill (index สูงสุดที่รู้จุดเข้าแล้ว) ---
+int gLatest = -1
+if array.size(pState) > 0
+    for gi = array.size(pState) - 1 to 0
+        if not na(array.get(pPbTarget, gi))
+            gLatest := gi
+            break
+if gLatest == -1
+    // ไม่มี plan ที่รู้จุดเข้า → ลบ preview
+    line.delete(gTpLine), line.delete(gSlLine), label.delete(gTpTag), label.delete(gSlTag)
+    gTpLine := na, gSlLine := na, gTpTag := na, gSlTag := na
+else
+    float gEnt = array.get(pPbTarget, gLatest)
+    [gOneR, gSl, gTp] = f_planLevels(array.get(pIsBuy, gLatest), array.get(pType, gLatest), gEnt, array.get(pTop, gLatest), array.get(pBot, gLatest), array.get(pRange, gLatest))
+    int gx1 = bar_index + labelOffset
+    int gx2 = gx1 + planPrevLen
+    if na(gTpLine)
+        gTpLine := f_planPrevLine(gTp, vBull)
+        gSlLine := f_planPrevLine(gSl, vBear)
+        gTpTag  := f_priceTag(gx2, gTp, "TP " + f_px(gTp), vBull)
+        gSlTag  := f_priceTag(gx2, gSl, "SL " + f_px(gSl), vBear)
+    else
+        line.set_xy1(gTpLine, gx1, gTp), line.set_xy2(gTpLine, gx2, gTp)
+        line.set_xy1(gSlLine, gx1, gSl), line.set_xy2(gSlLine, gx2, gSl)
+        label.set_xy(gTpTag, gx2, gTp), label.set_text(gTpTag, "TP " + f_px(gTp))
+        label.set_xy(gSlTag, gx2, gSl), label.set_text(gSlTag, "SL " + f_px(gSl))
 
 // ==========================================
 // --- 6. TRADE RESULTS (win / loss) ---

@@ -496,8 +496,6 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
         // Mode B: neutral range plan — show both possible stop orders
         float slUp   = slEdgeMode ? patBoxBot : patBoxTop - oneRDistOf(rng)
         float slDn   = slEdgeMode ? patBoxTop : patBoxBot + oneRDistOf(rng)
-        string txtB  = "รอเบรค ⇅\n" + f_planStopLine(true, patBoxTop, slUp) + "\n" + f_planStopLine(false, patBoxBot, slDn)
-        label plLb = f_inkLabel(bar_index + inkOff, (patBoxTop + patBoxBot) / 2, txtB, label.style_label_left, vRange, planLblSz)
         array.push(pIsBuy, false)
         array.push(pBreakLvl, na)
         array.push(pPbTarget, na)
@@ -509,8 +507,8 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
         array.push(pAnyBreak, true)
         array.push(pType, 0)
         array.push(pLine, na)
-        array.push(pLabel, plLb)
-        array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, (patBoxTop + patBoxBot) / 2, "รอเบรค ⇅ · STOP", label.style_label_left, vRange, lblSz))
+        array.push(pLabel, na)
+        array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, (patBoxTop + patBoxBot) / 2, "รอเบรค ⇅ · STOP", label.style_label_left, color.black, lblSz))
         alert("NEW PLAN · RANGE ⇅\nBUY STOP: " + f_px(patBoxTop) + "  SL: " + f_px(slUp) + "\nSELL STOP: " + f_px(patBoxBot) + "  SL: " + f_px(slDn), alert.freq_once_per_bar)
     else if not midOnlyMode
         // Mode A: direction fixed by the pattern.
@@ -520,7 +518,6 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
         float slStop   = slEdgeMode ? (isB ? patBoxBot : patBoxTop) : (isB ? breakLvl - oneRDistOf(rng) : breakLvl + oneRDistOf(rng))
         // แผน Pullback (gold) — เส้นประหนายาว (แบบ reference) ที่ระดับ stop order
         line  plLn = line.new(x1=bar_index, y1=breakLvl, x2=bar_index + labelOffset + 10, y2=breakLvl, color=color.new(vPlan, 10), width=2, style=line.style_dashed)
-        label plLb = f_inkLabel(bar_index + inkOff, breakLvl, f_planStopText(isB, breakLvl, slStop), label.style_label_left, vPlan, planLblSz)
         array.push(pIsBuy, isB)
         array.push(pBreakLvl, breakLvl)
         array.push(pPbTarget, pbTarget)
@@ -532,8 +529,8 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
         array.push(pAnyBreak, false)
         array.push(pType, 0)
         array.push(pLine, plLn)
-        array.push(pLabel, plLb)
-        array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, breakLvl, "รอ " + (isB ? "BUY" : "SELL") + " STOP ที่นี่ · " + f_px(breakLvl), label.style_label_left, vPlan, lblSz))
+        array.push(pLabel, na)
+        array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, breakLvl, "รอ " + (isB ? "BUY" : "SELL") + " STOP ที่นี่ · " + f_px(breakLvl), label.style_label_left, color.black, lblSz))
         alert("NEW PLAN · " + (isB ? "BUY" : "SELL") + " STOP\nBreak Level: " + f_px(breakLvl) + "\nPullback Entry: " + f_px(pbTarget) + "\nSL: " + f_px(slStop), alert.freq_once_per_bar)
 
     // --- Mid-Level parallel entry ---
@@ -560,7 +557,6 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
             float slMid = midSlMode == "Box Edge" ? (midBuy ? patBoxBot : patBoxTop) : (midBuy ? midEnt - rng * (midSlPct / 100) : midEnt + rng * (midSlPct / 100))
             // แผน Mid-Level (cyan) — เส้นประหนายาว (แบบ reference) ที่ระดับ limit
             line  mLn = line.new(x1=bar_index, y1=midEnt, x2=bar_index + labelOffset + 10, y2=midEnt, color=color.new(vMid, 10), width=2, style=line.style_dashed)
-            label mLb = f_inkLabel(bar_index + inkOff, midEnt, f_planLimitText(midBuy, midEnt, slMid), label.style_label_left, vMid, planLblSz)
             array.push(pIsBuy, midBuy)
             array.push(pBreakLvl, na)
             array.push(pPbTarget, midEnt)
@@ -572,8 +568,8 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
             array.push(pAnyBreak, false)
             array.push(pType, 1)
             array.push(pLine, mLn)
-            array.push(pLabel, mLb)
-            array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, midEnt, "รอ " + (midBuy ? "BUY" : "SELL") + " LIMIT ที่นี่ · " + f_px(midEnt), label.style_label_left, vMid, lblSz))
+            array.push(pLabel, na)
+            array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, midEnt, "รอ " + (midBuy ? "BUY" : "SELL") + " LIMIT ที่นี่ · " + f_px(midEnt), label.style_label_left, color.black, lblSz))
             alert("NEW PLAN · " + (midBuy ? "BUY" : "SELL") + " LIMIT (Mid-Level)\nEntry: " + f_px(midEnt) + "\nSL: " + f_px(slMid), alert.freq_once_per_bar)
 
 // ==========================================
@@ -762,27 +758,43 @@ if array.size(tHoldLabel) > 0
         if not na(hl)
             label.set_x(hl, bar_index + inkOff)
 
-// --- Update wait-status labels to stay in front of candles ---
+// --- เลือกออเดอร์ที่ยังไม่ fill ซึ่งใกล้ราคาปัจจุบันที่สุด 1 ตัว แล้วโชว์เฉพาะตัวนั้น ---
+int   gSel  = -1
+float gBest = na
+if array.size(pState) > 0
+    for k = 0 to array.size(pState) - 1
+        float brkK = array.get(pBreakLvl, k)
+        float pbK  = array.get(pPbTarget, k)
+        float lvlK = array.get(pState, k) == 0 and not na(brkK) ? brkK : not na(pbK) ? pbK : (array.get(pTop, k) + array.get(pBot, k)) / 2
+        float dK   = math.abs(lvlK - close)
+        if na(gBest) or dK < gBest
+            gBest := dK
+            gSel  := k
+// ป้ายสถานะ (แถวเดียว ตัวหนังสือดำ) + เส้น entry — โชว์เฉพาะออเดอร์ที่เลือก ที่เหลือซ่อน
 if array.size(pWaitLabel) > 0
     for k = 0 to array.size(pWaitLabel) - 1
-        label wl = array.get(pWaitLabel, k)
+        bool  sel = k == gSel
+        label wl  = array.get(pWaitLabel, k)
+        line  ln  = array.get(pLine, k)
         if not na(wl)
             label.set_x(wl, bar_index + inkOff)
+            label.set_textcolor(wl, sel ? color.black : color.new(color.black, 100))
+            label.set_color(wl, sel ? vInkBg : color.new(color.white, 100))
+        if not na(ln)
+            color lncol = array.get(pType, k) == 1 ? vMid : vPlan
+            line.set_color(ln, color.new(lncol, sel ? 10 : 100))
 
-// --- Preview TP/SL: โชว์เฉพาะ plan ล่าสุดที่ยังไม่ fill (index สูงสุดที่รู้จุดเข้าแล้ว) ---
-int gLatest = -1
-if array.size(pState) > 0
-    for gi = array.size(pState) - 1 to 0
-        if not na(array.get(pPbTarget, gi))
-            gLatest := gi
-            break
-if gLatest == -1
-    // ไม่มี plan ที่รู้จุดเข้า → ลบ preview
+// --- Preview TP/SL: เฉพาะออเดอร์ที่เลือก (ถ้ารู้จุดเข้าแล้ว) ---
+bool gShow = false
+if gSel != -1
+    gShow := not na(array.get(pPbTarget, gSel))
+if not gShow
+    // ไม่มีออเดอร์/ยังไม่รู้จุดเข้า → ลบ preview
     line.delete(gTpLine), line.delete(gSlLine), label.delete(gTpTag), label.delete(gSlTag)
     gTpLine := na, gSlLine := na, gTpTag := na, gSlTag := na
 else
-    float gEnt = array.get(pPbTarget, gLatest)
-    [gOneR, gSl, gTp] = f_planLevels(array.get(pIsBuy, gLatest), array.get(pType, gLatest), gEnt, array.get(pTop, gLatest), array.get(pBot, gLatest), array.get(pRange, gLatest))
+    float gEnt = array.get(pPbTarget, gSel)
+    [gOneR, gSl, gTp] = f_planLevels(array.get(pIsBuy, gSel), array.get(pType, gSel), gEnt, array.get(pTop, gSel), array.get(pBot, gSel), array.get(pRange, gSel))
     int gx1 = bar_index + labelOffset
     int gx2 = gx1 + planPrevLen
     if na(gTpLine)

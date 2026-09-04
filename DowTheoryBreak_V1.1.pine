@@ -545,7 +545,7 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
             midEnt := midBuy ? patBoxTop - rng * (midEntryPct / 100) : patBoxBot + rng * (midEntryPct / 100)
             makeMid := midBuy ? (close > midEnt) : (close < midEnt)
         if makeMid
-            float slMid = midSlMode == "Box Edge" ? (midBuy ? patBoxBot : patBoxTop) : (midBuy ? midEnt - rng * (midSlPct / 100) : midEnt + rng * (midSlPct / 100))
+            [pmOneR, slMid, tpMid] = f_planLevels(midBuy, 1, midEnt, patBoxTop, patBoxBot, rng)
             // แผน Mid-Level (cyan) — เส้นประหนายาว (แบบ reference) ที่ระดับ limit
             line  mLn = line.new(x1=bar_index, y1=midEnt, x2=bar_index + labelOffset + 10, y2=midEnt, color=color.new(vMid, 10), width=2, style=line.style_dashed)
             array.push(pIsBuy, midBuy)
@@ -561,6 +561,7 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
             array.push(pLine, mLn)
             array.push(pLabel, na)
             array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, midEnt, "รอ " + (midBuy ? "BUY" : "SELL") + " LIMIT ที่นี่ · " + f_px(midEnt), label.style_label_left, color.black, lblSz))
+            alert("เกิดออเดอร์ · " + (midBuy ? "BUY" : "SELL") + " LIMIT (Mid)\nEntry: " + f_px(midEnt) + "\nSL: " + f_px(slMid) + "\nTP: " + f_px(tpMid), alert.freq_once_per_bar)
 
 // ==========================================
 // --- 5. PLAN STATE MACHINE (break → pullback → fill) ---
@@ -617,6 +618,8 @@ if array.size(pState) > 0
                     label.set_xy(wl0, bar_index + inkOff, pbt)
                     label.set_text(wl0, "รอ " + (dirBuy ? "BUY" : "SELL") + " LIMIT ที่นี่ · " + f_px(pbt))
                     label.set_textcolor(wl0, vPlan)
+                [pbOneR, pbSlv, pbTpv] = f_planLevels(dirBuy, 0, pbt, tp_, bt_, rngv)
+                alert("เกิดออเดอร์ · " + (dirBuy ? "BUY" : "SELL") + " LIMIT\nEntry: " + f_px(pbt) + "\nSL: " + f_px(pbSlv) + "\nTP: " + f_px(pbTpv), alert.freq_once_per_bar)
         else if not sameBar and st == 0
             // Mode A Pullback: State 0 → wait for the box edge to break
             bool broke = isB ? (high > brk) : (low < brk)
@@ -641,6 +644,8 @@ if array.size(pState) > 0
                 if not na(wl2)
                     label.set_xy(wl2, bar_index + inkOff, pbT)
                     label.set_text(wl2, "รอ " + (isB ? "BUY" : "SELL") + " LIMIT ที่นี่ · " + f_px(pbT))
+                [paOneR, paSlv, paTpv] = f_planLevels(isB, 0, pbT, array.get(pTop, pi), array.get(pBot, pi), rngv2)
+                alert("เกิดออเดอร์ · " + (isB ? "BUY" : "SELL") + " LIMIT\nEntry: " + f_px(pbT) + "\nSL: " + f_px(paSlv) + "\nTP: " + f_px(paTpv), alert.freq_once_per_bar)
         else if not sameBar and st == 1
             // State 1: either Pullback wait-fill or Mid-Level wait-fill
             bool midCancel = false

@@ -502,7 +502,6 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
         array.push(pLine, na)
         array.push(pLabel, na)
         array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, (patBoxTop + patBoxBot) / 2, "รอเบรค ⇅ 2 ทาง", label.style_label_left, color.black, lblSz))
-        alert("NEW PLAN · RANGE ⇅ (เบรค+ย่อ)\nเบรคขึ้น: " + f_px(patBoxTop) + "  SL: " + f_px(slUp) + "\nเบรคลง: " + f_px(patBoxBot) + "  SL: " + f_px(slDn), alert.freq_once_per_bar)
     else if not midOnlyMode
         // Mode A: direction fixed by the pattern.
         float breakLvl = isB ? patBoxTop : patBoxBot
@@ -524,7 +523,6 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
         array.push(pLine, plLn)
         array.push(pLabel, na)
         array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, breakLvl, (isB ? "รอเบรคขึ้น BUY" : "รอเบรคลง SELL") + " · " + f_px(breakLvl), label.style_label_left, color.black, lblSz))
-        alert("NEW PLAN · " + (isB ? "BUY" : "SELL") + " Pullback\nรอเบรคที่: " + f_px(breakLvl) + "\nจุดเข้า (ย่อ): " + f_px(pbTarget) + "\nSL: " + f_px(slStop), alert.freq_once_per_bar)
 
     // --- Mid-Level parallel entry ---
     if useMidLevel and tradeDayAllowed
@@ -563,7 +561,6 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
             array.push(pLine, mLn)
             array.push(pLabel, na)
             array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, midEnt, "รอ " + (midBuy ? "BUY" : "SELL") + " LIMIT ที่นี่ · " + f_px(midEnt), label.style_label_left, color.black, lblSz))
-            alert("NEW PLAN · " + (midBuy ? "BUY" : "SELL") + " LIMIT (Mid-Level)\nEntry: " + f_px(midEnt) + "\nSL: " + f_px(slMid), alert.freq_once_per_bar)
 
 // ==========================================
 // --- 5. PLAN STATE MACHINE (break → pullback → fill) ---
@@ -602,7 +599,6 @@ if array.size(pState) > 0
                 float pbd  = pullbackMode == "% of Range" ? rngv * (pullbackRangePct / 100) : bl * (pullbackPct / 100)
                 float pbt  = dirBuy ? tp_ - pbd : bt_ + pbd
                 float slLim = slEdgeMode ? (dirBuy ? bt_ : tp_) : (dirBuy ? pbt - oneRDistOf(rngv) : pbt + oneRDistOf(rngv))
-                alert((dirBuy ? "BUY" : "SELL") + " เบรคแล้ว รอย่อ\nเบรคที่: " + f_px(bl) + "\nจุดเข้า LIMIT: " + f_px(pbt) + "\nSL: " + f_px(slLim), alert.freq_once_per_bar)
                 array.set(pIsBuy, pi, dirBuy)
                 array.set(pBreakLvl, pi, bl)
                 array.set(pPbTarget, pi, pbt)
@@ -627,7 +623,6 @@ if array.size(pState) > 0
             if broke
                 float rngv2 = array.get(pRange, pi)
                 float slLim2 = slEdgeMode ? (isB ? array.get(pBot, pi) : array.get(pTop, pi)) : (isB ? pbT - oneRDistOf(rngv2) : pbT + oneRDistOf(rngv2))
-                alert((isB ? "BUY" : "SELL") + " เบรคแล้ว รอย่อ\nเบรคที่: " + f_px(brk) + "\nจุดเข้า LIMIT: " + f_px(pbT) + "\nSL: " + f_px(slLim2), alert.freq_once_per_bar)
                 array.set(pState, pi, 1)
                 line pl2 = array.get(pLine, pi)
                 if not na(pl2)
@@ -659,7 +654,6 @@ if array.size(pState) > 0
                 line.delete(array.get(pLine, pi))
                 label.delete(array.get(pLabel, pi))
                 label.delete(array.get(pWaitLabel, pi))
-                alert("MID CANCEL · " + (isB ? "BUY" : "SELL") + " LIMIT\nEntry: " + f_px(pbT) + "\nเบรคกรอบ — ยกเลิก", alert.freq_once_per_bar)
                 removePlan := true
             bool reached = not midCancel and (isB ? low <= pbT : high >= pbT)
             if reached

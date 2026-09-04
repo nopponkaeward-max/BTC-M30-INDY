@@ -1,6 +1,6 @@
 //@version=6
 
-indicator("FeeInvest_BTCM30_V1.0", shorttitle="FeeInvest_BTCM30_V1.0", overlay=true, max_boxes_count=500, max_labels_count=500, max_lines_count=500)
+indicator("FeeInvest_BTCM30_V1.0", shorttitle="FeeInvest_BTCM30_V2.0", overlay=true, max_boxes_count=500, max_labels_count=500, max_lines_count=500)
 
 // ==========================================
 // --- 1. INPUT SETTINGS ---
@@ -8,8 +8,8 @@ indicator("FeeInvest_BTCM30_V1.0", shorttitle="FeeInvest_BTCM30_V1.0", overlay=t
 
 // --- Swing Pattern ---
 dowSwingLen    = input.int(3, title="Swing Length (bars ซ้าย-ขวา)", minval=2, maxval=10, group="Swing Pattern", tooltip="จำนวนแท่งซ้าย-ขวาสำหรับหา Swing High/Low\nค่ามาก = swing ใหญ่ขึ้น confirm ช้าลง\nค่าน้อย = swing เล็ก confirm เร็ว", display=display.none)
-showDowLabels  = input.bool(true, title="Show HL/LH/HH/LL Labels", group="Swing Pattern", display=display.none)
-showPatternBox = input.bool(true, title="Show Pattern Box (กรอบ swing pattern)", group="Swing Pattern", tooltip="แสดงกรอบเมื่อเจอ pattern\nSell: HL→HH→LL หรือ LL→HH→LL\nBuy: LH→LL→HH หรือ HH→LL→HH", display=display.none)
+showDowLabels  = input.bool(false, title="Show HL/LH/HH/LL Labels", group="Swing Pattern", display=display.none)
+showPatternBox = input.bool(false, title="Show Pattern Box (กรอบ swing pattern)", group="Swing Pattern", tooltip="แสดงกรอบเมื่อเจอ pattern\nSell: HL→HH→LL หรือ LL→HH→LL\nBuy: LH→LL→HH หรือ HH→LL→HH", display=display.none)
 maxPatBoxes    = input.int(300, title="Max Pattern Boxes kept (กรอบย้อนหลัง)", minval=10, maxval=490, group="Swing Pattern", tooltip="เก็บกรอบ pattern ย้อนหลังได้สูงสุดกี่กรอบ (เกินกว่านี้ลบกรอบเก่าสุด)\nหมายเหตุ: Pine จำกัดรวมทุก box บนกราฟไม่เกิน 500", display=display.none)
 
 // --- Entry Strategy (Pullback %) ---
@@ -168,11 +168,11 @@ color vNone   = color.new(color.white, 100)
 color vDarkTx = color.rgb(13, 17, 28)
 
 showStatsTable    = input.bool(true, title="Show Main Stats Table", group="Display & Stats", display=display.none)
-showTradePath     = input.bool(true, title="Show Trade Path Lines (เส้นโยง เปิด→TP/SL)", group="Display & Stats", display=display.none)
+showTradePath     = input.bool(false, title="Show Trade Path Lines (เส้นโยง เปิด→TP/SL)", group="Display & Stats", display=display.none)
 showMonthlyTable  = input.bool(true, title="Show Monthly Table (By Month)", group="Display & Stats", display=display.none)
 showDailyTable    = input.bool(false, title="Show Daily Log Table (By Date, โหมด Specific Month)", group="Display & Stats", display=display.none)
-showSettingsTable = input.bool(true, title="Show Settings Summary Table", group="Display & Stats", display=display.none)
-showDayTable      = input.bool(true, title="Show By-Day Table (Sun–Sat)", group="Display & Stats", display=display.none)
+showSettingsTable = input.bool(false, title="Show Settings Summary Table", group="Display & Stats", display=display.none)
+showDayTable      = input.bool(false, title="Show By-Day Table (Sun–Sat)", group="Display & Stats", display=display.none)
 showSun = input.bool(true,  title="  ├ Sun",  group="Display & Stats", inline="days1", display=display.none)
 showMon = input.bool(true,  title="Mon",      group="Display & Stats", inline="days1", display=display.none)
 showTue = input.bool(true,  title="Tue",      group="Display & Stats", inline="days1", display=display.none)

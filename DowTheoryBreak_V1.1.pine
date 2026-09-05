@@ -522,7 +522,7 @@ if (newSellPattern or newBuyPattern) and not na(patBoxTop) and not na(patBoxBot)
         array.push(pType, 0)
         array.push(pLine, plLn)
         array.push(pLabel, na)
-        array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, breakLvl, (isB ? "รอเบรคขึ้น BUY" : "รอเบรคลง SELL") + " · " + f_px(breakLvl), label.style_label_left, color.black, lblSz))
+        array.push(pWaitLabel, f_inkLabel(bar_index + inkOff, breakLvl, "รอเบรคจุดนี้ก่อน เพื่อรอตั้ง " + (isB ? "Buy Limit" : "Sell Limit") + " ที่ราคา " + f_px(pbTarget), label.style_label_left, color.black, lblSz))
 
     // --- Mid-Level parallel entry ---
     if useMidLevel and tradeDayAllowed

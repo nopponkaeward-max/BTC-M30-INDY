@@ -32,7 +32,7 @@ tradeSat = false
 
 // --- Mid-Level Entry (parallel — ทำงานร่วมกับ Pullback%) ---
 midTip = "เข้าไม้กลางกรอบ ทำงานคู่ขนานกับ Pullback%\n\nวัดจาก 'ขอบฝั่ง momentum' เข้ามา X%:\nBull box: entry = ขอบบน − X%×range | เงื่อนไข close > entry → limit BUY\nBear box: entry = ขอบล่าง + X%×range | เงื่อนไข close < entry → limit SELL\n\nX เล็ก = เข้าใกล้ขอบ (ย่อตื้น) | X ใหญ่ = เข้าลึกกลางกรอบ"
-useMidLevel  = true
+useMidLevel  = false
 midOnly      = false
 midDualSide  = false
 midEntryPct  = 25
@@ -471,8 +471,8 @@ if array.size(feedT) > 0
                 swBr3  := pivT
                 if swSeq3 == "HH" and swSeq2 == "LL" and (swSeq1 == "LH" or swSeq1 == "HH")
                     newBuyPattern := true
-                    patBoxTop  := swPx3
-                    patBoxBot  := swPx2
+                    patBoxTop  := math.max(swPx1, swPx2, swPx3)
+                    patBoxBot  := math.min(swPx1, swPx2, swPx3)
                     patBoxLeft := swBr1
                 if swSeq3 == "HH" and swSeq2 == "HL" and swSeq1 == "HH"
                     newBuyPattern := true
@@ -503,8 +503,8 @@ if array.size(feedT) > 0
                 swBr3  := pivT
                 if swSeq3 == "LL" and swSeq2 == "HH" and (swSeq1 == "HL" or swSeq1 == "LL")
                     newSellPattern := true
-                    patBoxTop  := swPx2
-                    patBoxBot  := swPx3
+                    patBoxTop  := math.max(swPx1, swPx2, swPx3)
+                    patBoxBot  := math.min(swPx1, swPx2, swPx3)
                     patBoxLeft := swBr1
                 if swSeq3 == "LL" and swSeq2 == "LH" and swSeq1 == "LL"
                     newSellPattern := true
